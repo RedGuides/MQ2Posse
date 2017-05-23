@@ -5,13 +5,14 @@
 // v1.03 :: EqMule - 2015-03-09
 // v1.04 :: Ctaylor22 - 2016-07-22
 // v1.05 :: Sym - 2017-05-04
+// v1.06 :: Plure - 2017-05-04
 
 #include "../MQ2Plugin.h"
 #include <vector>
 #include "mmsystem.h"
 #pragma comment(lib, "winmm.lib")
 
-PLUGIN_VERSION(1.05);
+PLUGIN_VERSION(1.06);
 
 //#pragma warning(disable:4244)
 PreSetup("MQ2Posse");
@@ -23,6 +24,9 @@ vector <string> vIniNames;
 vector <string> vNames;
 vector <string> vCommands;
 SEARCHSPAWN mySpawn;
+
+//MQ2EQBC shit
+bool(*fAreTheyConnected)(char* szName);
 
 bool bPosseEnabled = false;
 //bool bZoning = false;
@@ -580,6 +584,37 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
     }
 }
 
+PMQPLUGIN Plugin(char* PluginName) 
+{
+	long Length = strlen(PluginName) + 1;
+	PMQPLUGIN pLook = pPlugins;
+	while (pLook && _strnicmp(PluginName, pLook->szFilename, Length)) pLook = pLook->pNext;
+	return pLook;
+}
+
+bool HandleEQBC(void)
+{
+	unsigned short sEQBCConnected = 0;
+	bool bEQBCLoaded = false;
+	unsigned short(*fisConnected)() = NULL;
+	fAreTheyConnected = NULL;
+	if (PMQPLUGIN pLook = Plugin("mq2eqbc"))
+	{
+		fisConnected = (unsigned short(*)())GetProcAddress(pLook->hModule, "isConnected");
+		fAreTheyConnected = (bool(*)(char* szName))GetProcAddress(pLook->hModule, "AreTheyConnected");
+		bEQBCLoaded = true;
+	}
+	if (fisConnected && bEQBCLoaded)
+	{
+		sEQBCConnected = fisConnected();
+	}
+	if (fisConnected && fAreTheyConnected && sEQBCConnected && bEQBCLoaded)
+	{
+		return true;
+	}
+	return false;
+}
+
 BOOL CheckNames(PCHAR szName) {
     CHAR szTemp[MAX_STRING];
     if (gGameState==GAMESTATE_INGAME) {
@@ -592,6 +627,13 @@ BOOL CheckNames(PCHAR szName) {
                     return true;
                 }
             }
+			if (HandleEQBC())
+			{
+				if (fAreTheyConnected(szName))
+				{
+					return true;
+				}
+			}
         }
     }
     return false;
