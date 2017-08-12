@@ -6,23 +6,25 @@
 // v1.04 :: Ctaylor22 - 2016-07-22
 // v1.05 :: Sym - 2017-05-04
 // v1.06 :: Plure - 2017-05-04
+// v1.07 :: Sym - 2017-07-29 - Added Posse.StrangerNames TLO. Space separated list of current strangers.
 
 #include "../MQ2Plugin.h"
 #include <vector>
 #include "mmsystem.h"
 #pragma comment(lib, "winmm.lib")
 
-PLUGIN_VERSION(1.06);
+PLUGIN_VERSION(1.07);
 
 //#pragma warning(disable:4244)
 PreSetup("MQ2Posse");
 
-#define SKIP_PULSES 50
+#define SKIP_PULSES 10
 vector <string> vSeen;
 vector <string> vGlobalNames;
 vector <string> vIniNames;
 vector <string> vNames;
 vector <string> vCommands;
+vector <string> vStrangers;
 SEARCHSPAWN mySpawn;
 
 //MQ2EQBC shit
@@ -68,6 +70,7 @@ public:
       ZRadius=4,
       Friends=5,
       Strangers=6,
+      StrangerNames=7
    };
 
    MQ2PosseType():MQ2Type("Posse")
@@ -78,6 +81,7 @@ public:
       TypeMember(ZRadius);
       TypeMember(Friends);
       TypeMember(Strangers);
+      TypeMember(StrangerNames);
    }
 
    ~MQ2PosseType()
@@ -114,6 +118,23 @@ public:
          case Strangers:
             Dest.Int=gStrangers;
             Dest.Type=pIntType;
+            return true;
+         case StrangerNames:
+             char MQ2PosseTypeTemp[MAX_STRING] = { 0 };
+             if ( vStrangers.size () ) {
+                 for ( register unsigned int a = 0; a < vStrangers.size (); a++ ) {
+                     string& vRef = vStrangers[a];
+                     sprintf_s (szTemp, "%s ", vRef.c_str());
+                     strcat_s (MQ2PosseTypeTemp, szTemp);
+                 }
+                 strcpy_s (DataTypeTemp, MQ2PosseTypeTemp);
+                 Dest.Ptr = &DataTypeTemp[0];
+                 Dest.Type = pStringType;
+             } else {
+                 strcpy_s (DataTypeTemp, MAX_STRING, "NONE");
+                 Dest.Ptr = &DataTypeTemp[0];
+                 Dest.Type = pStringType;
+             }
             return true;
       }
       return false;
@@ -399,6 +420,7 @@ void ShowHelp(void) {
     WriteChatf("\ay${Posse.Count}\ax :: Returns how many total people in radius");
     WriteChatf("\ay${Posse.Friends}\ax :: Returns how many friends are in radius");
     WriteChatf("\ay${Posse.Strangers}\ax :: Returns how many strangers are in radius");
+    WriteChatf("\ay${Posse.StrangerNames}\ax :: Returns space delimited list of strangers names in radius");
 }
 
 VOID doCommands(VOID) {
@@ -474,6 +496,12 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
         }
         vIniNames.push_back(szTemp);
         CombineNames();
+
+        gStrangers = 0;
+        gFriends = 0;
+        vStrangers.clear();
+        vSeen.clear();
+
         WriteChatf("MQ2Posse :: Added \ay%s\ax to name list", szTemp);
     }
     else if(!_strnicmp(szTemp,"del",3)) {
@@ -488,6 +516,10 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
         if (delIndex >= 0) {
             vIniNames.erase(vIniNames.begin() + delIndex);
             CombineNames();
+            gStrangers = 0;
+            gFriends = 0;
+            vStrangers.clear();
+            vSeen.clear();
             WriteChatf("MQ2Posse :: Deleted user \ay%s\ax", szTemp);
         } else {
             WriteChatf("MQ2Posse :: User \ay%s\ax not found", szTemp);
@@ -584,35 +616,35 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
     }
 }
 
-PMQPLUGIN Plugin(char* PluginName) 
+PMQPLUGIN Plugin(char* PluginName)
 {
-	long Length = strlen(PluginName) + 1;
-	PMQPLUGIN pLook = pPlugins;
-	while (pLook && _strnicmp(PluginName, pLook->szFilename, Length)) pLook = pLook->pNext;
-	return pLook;
+    long Length = strlen(PluginName) + 1;
+    PMQPLUGIN pLook = pPlugins;
+    while (pLook && _strnicmp(PluginName, pLook->szFilename, Length)) pLook = pLook->pNext;
+    return pLook;
 }
 
 bool HandleEQBC(void)
 {
-	unsigned short sEQBCConnected = 0;
-	bool bEQBCLoaded = false;
-	unsigned short(*fisConnected)() = NULL;
-	fAreTheyConnected = NULL;
-	if (PMQPLUGIN pLook = Plugin("mq2eqbc"))
-	{
-		fisConnected = (unsigned short(*)())GetProcAddress(pLook->hModule, "isConnected");
-		fAreTheyConnected = (bool(*)(char* szName))GetProcAddress(pLook->hModule, "AreTheyConnected");
-		bEQBCLoaded = true;
-	}
-	if (fisConnected && bEQBCLoaded)
-	{
-		sEQBCConnected = fisConnected();
-	}
-	if (fisConnected && fAreTheyConnected && sEQBCConnected && bEQBCLoaded)
-	{
-		return true;
-	}
-	return false;
+    unsigned short sEQBCConnected = 0;
+    bool bEQBCLoaded = false;
+    unsigned short(*fisConnected)() = NULL;
+    fAreTheyConnected = NULL;
+    if (PMQPLUGIN pLook = Plugin("mq2eqbc"))
+    {
+        fisConnected = (unsigned short(*)())GetProcAddress(pLook->hModule, "isConnected");
+        fAreTheyConnected = (bool(*)(char* szName))GetProcAddress(pLook->hModule, "AreTheyConnected");
+        bEQBCLoaded = true;
+    }
+    if (fisConnected && bEQBCLoaded)
+    {
+        sEQBCConnected = fisConnected();
+    }
+    if (fisConnected && fAreTheyConnected && sEQBCConnected && bEQBCLoaded)
+    {
+        return true;
+    }
+    return false;
 }
 
 BOOL CheckNames(PCHAR szName) {
@@ -627,13 +659,13 @@ BOOL CheckNames(PCHAR szName) {
                     return true;
                 }
             }
-			if (HandleEQBC())
-			{
-				if (fAreTheyConnected(szName))
-				{
-					return true;
-				}
-			}
+            if (HandleEQBC())
+            {
+                if (fAreTheyConnected(szName))
+                {
+                    return true;
+                }
+            }
         }
     }
     return false;
@@ -695,6 +727,7 @@ void SpawnCheck(PSPAWNINFO pNewSpawn) {
                 gFriends++;
                 if (bNotify && bNotifyFriends) WriteChatf("\ag%s is nearby.\ax", pNewSpawn->DisplayedName);
             } else {
+                vStrangers.push_back(pNewSpawn->DisplayedName);
                 gStrangers++;
                 if (bNotify && bNotifyStrangers) WriteChatf("\ar%s is nearby.\ax", pNewSpawn->DisplayedName);
                 if (bAudio) if (gAudioTimer<=MQGetTickCount64()) {
@@ -712,6 +745,8 @@ void SpawnCheck(PSPAWNINFO pNewSpawn) {
 PLUGIN_API VOID OnZone(VOID) {
     gStrangers = 0;
     gFriends = 0;
+    vStrangers.clear();
+    vSeen.clear ();
 }
 
 /*
@@ -770,6 +805,12 @@ PLUGIN_API VOID OnRemoveSpawn(PSPAWNINFO pSpawn) {
                         gFriends--;
                     if (bNotify && bNotifyFriends) WriteChatf("\ag%s has moved out of range.\ax", delName);
                 } else {
+                    for ( unsigned int b = 0; b < vStrangers.size (); b++ ) {
+                        string& vStrangerRef = vStrangers[b];
+                        if ( !_stricmp (delName, vStrangerRef.c_str ()) ) {
+                            vStrangers.erase (vStrangers.begin () + b);
+                        }
+                    }
                     if (gStrangers > 0)
                         gStrangers--;
                     if (bNotify && bNotifyStrangers) WriteChatf("\ar%s has moved out of range.\ax", delName);
@@ -830,6 +871,12 @@ PLUGIN_API VOID OnPulse(VOID) {
                                     gFriends--;
                                 if (bNotify && bNotifyFriends) WriteChatf("\ag%s has moved out of range.\ax", delName);
                             } else {
+                                for ( unsigned int d = 0; d < vStrangers.size (); d++ ) {
+                                    string& vStrangerRef = vStrangers[d];
+                                    if ( !_stricmp (delName, vStrangerRef.c_str ()) ) {
+                                        vStrangers.erase (vStrangers.begin () + d);
+                                    }
+                                }
                                 if (gStrangers > 0)
                                     gStrangers--;
                                 if (bNotify && bNotifyStrangers) WriteChatf("\ar%s has moved out of range.\ax", delName);
@@ -854,6 +901,13 @@ PLUGIN_API VOID OnPulse(VOID) {
                             gFriends--;
                         if (bNotify && bNotifyFriends) WriteChatf("\ag%s has moved out of range.\ax", delName);
                     } else {
+
+                        for ( unsigned int d = 0; d < vStrangers.size (); d++ ) {
+                            string& vStrangerRef = vStrangers[d];
+                            if ( !_stricmp (delName, vStrangerRef.c_str ()) ) {
+                                vStrangers.erase (vStrangers.begin () + d);
+                            }
+                        }
                         if (gStrangers > 0)
                             gStrangers--;
                         if (bNotify && bNotifyStrangers) WriteChatf("\ar%s has moved out of range.\ax", delName);
