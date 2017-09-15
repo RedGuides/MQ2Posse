@@ -9,6 +9,7 @@
 // v1.07 :: Sym - 2017-07-29 - Added Posse.StrangerNames TLO. Space separated list of current strangers.
 
 #include "../MQ2Plugin.h"
+using namespace std;
 #include <vector>
 #include "mmsystem.h"
 #pragma comment(lib, "winmm.lib")
