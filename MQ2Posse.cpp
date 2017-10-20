@@ -457,6 +457,8 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
         bPosseEnabled = false;
         gStrangers = 0;
         gFriends = 0;
+		vStrangers.clear();
+		vSeen.clear();
         WriteChatf("MQ2Posse :: \arDisabled\ax");
     }
     else if (!_strnicmp(szTemp, "status",6)) {
@@ -712,7 +714,7 @@ void SpawnCheck(PSPAWNINFO pNewSpawn) {
             WriteChatf("My Name: %s : %s : %s ", GetCharInfo()->Name, pNewSpawn->Name, pChar1->Name);
             WriteChatf("My Guild ID: %lu ID: %lu ID: %lu ", GetCharInfo()->GuildID, pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID, pChar1->mPlayerPhysicsClient.pSpawn->GuildID);
         }
-        if (bIgnoreGuild && GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID) return;
+		if (bIgnoreGuild && GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID) return;
         if (pNewSpawn != pChar && DistanceToSpawn(pNewSpawn, pChar) < SpawnRadius) {
             // check if spawn is on the list already
             for (register unsigned int a = 0; a < vSeen.size(); a++) {
