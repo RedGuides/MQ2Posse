@@ -12,7 +12,7 @@
 //			made it so if someone went from being a stranger to friend or friend to stranger it would recognized this, 
 //			added the ability to ignore people in your fellowship, fixed a bug where if you set it to ignore your guild and at some point you became guildless it would ignore everyone not in a guild.
 
-#include <MQ2Plugin.h>
+#include <mq/Plugin.h>
 #include <vector>
 #include "mmsystem.h"
 #pragma comment(lib, "winmm.lib")
