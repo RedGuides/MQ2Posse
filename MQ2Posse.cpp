@@ -822,9 +822,15 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 			{
 				if (bIgnoreGuild)
 				{
+#if defined(NEWCHARINFO)
+					if (GetCharInfo()->GuildID.GUID)
+					{
+						if (GetCharInfo()->GuildID.GUID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID) 
+#else
 					if (GetCharInfo()->GuildID)
 					{
 						if (GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID) 
+#endif
 						{
 							vSeen.erase(vSeen.begin() + a);
 							ClearFriendsAndStrangers(szTemp);
@@ -942,9 +948,15 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 				WriteChatf("My Name: %s Their Name: %s ", GetCharInfo()->Name, pNewSpawn->Name);
 				WriteChatf("My Guild ID: %lu Their Guild ID: %lu  ", GetCharInfo()->GuildID, pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID);
 			}
+#if defined(NEWCHARINFO)
+			if (GetCharInfo()->GuildID.GUID)
+			{
+				if (GetCharInfo()->GuildID.GUID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
+#else
 			if (GetCharInfo()->GuildID)
 			{
 				if (GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
+#endif
 				{
 					return;
 				}
