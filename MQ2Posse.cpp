@@ -13,16 +13,16 @@
 //			added the ability to ignore people in your fellowship, fixed a bug where if you set it to ignore your guild and at some point you became guildless it would ignore everyone not in a guild.
 
 #include <mq/Plugin.h>
-#include <vector>
 #include "mmsystem.h"
+
+#include <vector>
+
 #pragma comment(lib, "winmm.lib")
 
+PreSetup("MQ2Posse");
 PLUGIN_VERSION(1.09);
 
-//#pragma warning(disable:4244)
-PreSetup("MQ2Posse");
-
-#define SKIP_PULSES 50
+constexpr auto SKIP_PULSES = 50;
 std::vector<std::string> vSeen;
 std::vector<std::string> vGlobalNames;
 std::vector<std::string> vIniNames;
@@ -220,11 +220,6 @@ void CombineNames()
 }
 
 
-void Update_INIFileName() 
-{
-    sprintf_s(INIFileName,"%s\\MQ2Posse.ini",gszINIPath);
-}
-
 void ShowStatus(void) 
 {
     WriteChatf("\atMQ2Posse :: v%1.2f :: by Sym for RedGuides.com\ax", MQ2Version);
@@ -251,7 +246,6 @@ void ShowStatus(void)
 
 VOID LoadINI(VOID) 
 {
-    Update_INIFileName();
     // get on/off settings
 	char szTemp[MAX_STRING];
 	char szWavePath[MAX_STRING];
@@ -266,7 +260,7 @@ VOID LoadINI(VOID)
 	bIgnoreFellowship = GetPrivateProfileInt(szTemp, "IgnoreFellowship", 0, INIFileName) > 0 ? true : false;
     bIgnoreGuild = GetPrivateProfileInt(szTemp, "IgnoreGuild", 0, INIFileName) > 0 ? true : false;
     bAudio = GetPrivateProfileInt(szTemp, "Audio", 0, INIFileName) > 0 ? true : false;
-    sprintf_s(szWavePath,"%s\\mq2posse.wav",gszINIPath);
+    sprintf_s(szWavePath,"%s\\mq2posse.wav", gPathResources);
     GetPrivateProfileString(szTemp,"Soundfile", szWavePath,PosseSound,2047,INIFileName);
     GetPrivateProfileString(szTemp,"SkipZones","poknowledge,guildhall,guildlobby,bazaar,neighborhood",szSkipZones,2047,INIFileName);
 
@@ -387,7 +381,6 @@ VOID LoadINI(VOID)
 VOID SaveINI(VOID) {
     char ToStr[16];
 
-    Update_INIFileName();
     // write on/off settings
 	char szTemp[MAX_STRING];
     sprintf_s(szTemp,"%s_Settings",GetCharInfo()->Name);
@@ -783,9 +776,15 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 			{
 				if (bIgnoreGuild)
 				{
+#if defined(NEWCHARINFO)
+					if (GetCharInfo()->GuildID.GUID)
+					{
+						if (GetCharInfo()->GuildID.GUID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID) 
+#else
 					if (GetCharInfo()->GuildID)
 					{
 						if (GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID) 
+#endif
 						{
 							vSeen.erase(vSeen.begin() + a);
 							ClearFriendsAndStrangers(szTemp);
@@ -903,9 +902,15 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 				WriteChatf("My Name: %s Their Name: %s ", GetCharInfo()->Name, pNewSpawn->Name);
 				WriteChatf("My Guild ID: %lu Their Guild ID: %lu  ", GetCharInfo()->GuildID, pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID);
 			}
+#if defined(NEWCHARINFO)
+			if (GetCharInfo()->GuildID.GUID)
+			{
+				if (GetCharInfo()->GuildID.GUID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
+#else
 			if (GetCharInfo()->GuildID)
 			{
 				if (GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
+#endif
 				{
 					return;
 				}
