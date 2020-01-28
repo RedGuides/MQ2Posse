@@ -91,23 +91,23 @@ public:
 		{
 		case Status:
 			Dest.Int = bPosseEnabled;
-			Dest.Type = pBoolType;
+			Dest.Type = mq::datatypes::pBoolType;
 			return true;
 		case Count:
 			Dest.Int = vSeen.size();
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case Radius:
 			Dest.Int = SpawnRadius;
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case ZRadius:
 			Dest.Int = SpawnZRadius;
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case Friends:
 			Dest.Int = vFriends.size();
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case FriendNames:
 			if (vFriends.size()) 
@@ -121,18 +121,18 @@ public:
 				}
 				strcpy_s(DataTypeTemp, MQ2PosseTypeTemp);
 				Dest.Ptr = &DataTypeTemp[0];
-				Dest.Type = pStringType;
+				Dest.Type = mq::datatypes::pStringType;
 			}
 			else 
 			{
 				strcpy_s(DataTypeTemp, MAX_STRING, "NONE");
 				Dest.Ptr = &DataTypeTemp[0];
-				Dest.Type = pStringType;
+				Dest.Type = mq::datatypes::pStringType;
 			}
 			return true;
 		case Strangers:
 			Dest.Int = vStrangers.size();
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case StrangerNames:
 			if (vStrangers.size()) 
@@ -147,12 +147,12 @@ public:
 				}
 				strcpy_s(DataTypeTemp, MQ2PosseTypeTemp);
 				Dest.Ptr = &DataTypeTemp[0];
-				Dest.Type = pStringType;
+				Dest.Type = mq::datatypes::pStringType;
 			}
 			else {
 				strcpy_s(DataTypeTemp, MAX_STRING, "NONE");
 				Dest.Ptr = &DataTypeTemp[0];
-				Dest.Type = pStringType;
+				Dest.Type = mq::datatypes::pStringType;
 			}
 			return true;
 		}
