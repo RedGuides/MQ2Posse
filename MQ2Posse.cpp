@@ -12,26 +12,25 @@
 //			made it so if someone went from being a stranger to friend or friend to stranger it would recognized this, 
 //			added the ability to ignore people in your fellowship, fixed a bug where if you set it to ignore your guild and at some point you became guildless it would ignore everyone not in a guild.
 
-#include "../MQ2Plugin.h"
-using namespace std;
-#include <vector>
+#include <mq/Plugin.h>
 #include "mmsystem.h"
+
+#include <vector>
+
 #pragma comment(lib, "winmm.lib")
 
+PreSetup("MQ2Posse");
 PLUGIN_VERSION(1.09);
 
-//#pragma warning(disable:4244)
-PreSetup("MQ2Posse");
-
-#define SKIP_PULSES 50
-vector <string> vSeen;
-vector <string> vGlobalNames;
-vector <string> vIniNames;
-vector <string> vNames;
-vector <string> vCommands;
-vector <string> vFriends;
-vector <string> vStrangers;
-SEARCHSPAWN mySpawn;
+constexpr auto SKIP_PULSES = 50;
+std::vector<std::string> vSeen;
+std::vector<std::string> vGlobalNames;
+std::vector<std::string> vIniNames;
+std::vector<std::string> vNames;
+std::vector<std::string> vCommands;
+std::vector<std::string> vFriends;
+std::vector<std::string> vStrangers;
+MQSpawnSearch mySpawn;
 
 bool bPosseEnabled = false;
 bool bInitDone = false;
@@ -83,84 +82,84 @@ public:
 	{
 	}
 
-	bool GetMember(MQ2VARPTR VarPtr, PCHAR Member, PCHAR Index, MQ2TYPEVAR &Dest)
+	bool GetMember(MQVarPtr VarPtr, PCHAR Member, PCHAR Index, MQTypeVar& Dest)
 	{
-		PMQ2TYPEMEMBER pMember = MQ2PosseType::FindMember(Member);
+		MQTypeMember* pMember = MQ2PosseType::FindMember(Member);
 		if (!pMember)
 			return false;
 		switch ((PosseMembers)pMember->ID)
 		{
 		case Status:
 			Dest.Int = bPosseEnabled;
-			Dest.Type = pBoolType;
+			Dest.Type = mq::datatypes::pBoolType;
 			return true;
 		case Count:
 			Dest.Int = vSeen.size();
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case Radius:
 			Dest.Int = SpawnRadius;
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case ZRadius:
 			Dest.Int = SpawnZRadius;
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case Friends:
 			Dest.Int = vFriends.size();
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case FriendNames:
-			if (vFriends.size()) 
+			if (vFriends.size())
 			{
 				char szTemp[MAX_STRING];
 				char MQ2PosseTypeTemp[MAX_STRING];
-				for (register unsigned int a = 0; a < vFriends.size(); a++) {
-					string& vRef = vFriends[a];
+				for (unsigned int a = 0; a < vFriends.size(); a++) {
+					std::string& vRef = vFriends[a];
 					sprintf_s(szTemp, "%s ", vRef.c_str());
 					strcat_s(MQ2PosseTypeTemp, szTemp);
 				}
 				strcpy_s(DataTypeTemp, MQ2PosseTypeTemp);
 				Dest.Ptr = &DataTypeTemp[0];
-				Dest.Type = pStringType;
+				Dest.Type = mq::datatypes::pStringType;
 			}
-			else 
+			else
 			{
 				strcpy_s(DataTypeTemp, MAX_STRING, "NONE");
 				Dest.Ptr = &DataTypeTemp[0];
-				Dest.Type = pStringType;
+				Dest.Type = mq::datatypes::pStringType;
 			}
 			return true;
 		case Strangers:
 			Dest.Int = vStrangers.size();
-			Dest.Type = pIntType;
+			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case StrangerNames:
-			if (vStrangers.size()) 
+			if (vStrangers.size())
 			{
 				char szTemp[MAX_STRING];
 				char MQ2PosseTypeTemp[MAX_STRING];
-				for (register unsigned int a = 0; a < vStrangers.size(); a++) 
+				for (unsigned int a = 0; a < vStrangers.size(); a++)
 				{
-					string& vRef = vStrangers[a];
+					std::string& vRef = vStrangers[a];
 					sprintf_s(szTemp, "%s ", vRef.c_str());
 					strcat_s(MQ2PosseTypeTemp, szTemp);
 				}
 				strcpy_s(DataTypeTemp, MQ2PosseTypeTemp);
 				Dest.Ptr = &DataTypeTemp[0];
-				Dest.Type = pStringType;
+				Dest.Type = mq::datatypes::pStringType;
 			}
 			else {
 				strcpy_s(DataTypeTemp, MAX_STRING, "NONE");
 				Dest.Ptr = &DataTypeTemp[0];
-				Dest.Type = pStringType;
+				Dest.Type = mq::datatypes::pStringType;
 			}
 			return true;
 		}
 		return false;
 	}
 
-	bool ToString(MQ2VARPTR VarPtr, PCHAR Destination)
+	bool ToString(MQVarPtr VarPtr, PCHAR Destination)
 	{
 		strcpy_s(Destination, MAX_STRING, "FALSE");
 		if (bPosseEnabled)
@@ -168,65 +167,60 @@ public:
 		return true;
 	}
 
-	bool FromData(MQ2VARPTR &VarPtr, MQ2TYPEVAR &Source)
+	bool FromData(MQVarPtr& VarPtr, MQTypeVar& Source)
 	{
 		return false;
 	}
-	bool FromString(MQ2VARPTR &VarPtr, PCHAR Source)
+	bool FromString(MQVarPtr& VarPtr, PCHAR Source)
 	{
 		return false;
 	}
 };
 
-BOOL dataPosse(PCHAR szName, MQ2TYPEVAR &Ret)
+bool dataPosse(const char* szName, MQTypeVar& Ret)
 {
     Ret.DWord=1;
     Ret.Type=pPosseType;
     return true;
 }
 
-void ListUsers() 
+void ListUsers()
 {
     WriteChatf("User list contains \ay%d\ax %s", vNames.size(), vNames.size() > 1 ? "entries" : "entry");
     for (unsigned int a = 0; a < vNames.size(); a++)
 	{
-        string& vRef = vNames[a];
+		std::string& vRef = vNames[a];
         WriteChatf("\at%d: %s\ax", a+1, vRef.c_str());
     }
 }
 
-void ListCommands() 
+void ListCommands()
 {
     WriteChatf("Command list contains \ay%d\ax %s", vCommands.size(), vCommands.size() > 1 ? "entries" : "entry");
     for (unsigned int a = 0; a < vCommands.size(); a++) 
 	{
-        string& vRef = vCommands[a];
+		std::string& vRef = vCommands[a];
         WriteChatf("\at%d: %s\ax", a+1, vRef.c_str());
     }
 }
 
-void CombineNames() 
+void CombineNames()
 {
     vNames.clear();
-    for (register unsigned int a = 0; a < vGlobalNames.size(); a++) 
+    for (unsigned int a = 0; a < vGlobalNames.size(); a++)
 	{
-        string& vRef = vGlobalNames[a];
+		std::string& vRef = vGlobalNames[a];
         vNames.push_back(vRef.c_str());
     }
-    for (register unsigned int a = 0; a < vIniNames.size(); a++) 
+    for (unsigned int a = 0; a < vIniNames.size(); a++)
 	{
-        string& vRef = vIniNames[a];
+		std::string& vRef = vIniNames[a];
         vNames.push_back(vRef.c_str());
     }
 }
 
 
-void Update_INIFileName() 
-{
-    sprintf_s(INIFileName,"%s\\MQ2Posse.ini",gszINIPath);
-}
-
-void ShowStatus(void) 
+void ShowStatus(void)
 {
     WriteChatf("\atMQ2Posse :: v%1.2f :: by Sym for RedGuides.com\ax", MQ2Version);
     WriteChatf("MQ2Posse :: %s", bPosseEnabled?"\agENABLED\ax":"\arDISABLED\ax");
@@ -250,9 +244,8 @@ void ShowStatus(void)
 	}
 }
 
-VOID LoadINI(VOID) 
+VOID LoadINI(VOID)
 {
-    Update_INIFileName();
     // get on/off settings
 	char szTemp[MAX_STRING];
 	char szWavePath[MAX_STRING];
@@ -267,7 +260,7 @@ VOID LoadINI(VOID)
 	bIgnoreFellowship = GetPrivateProfileInt(szTemp, "IgnoreFellowship", 0, INIFileName) > 0 ? true : false;
     bIgnoreGuild = GetPrivateProfileInt(szTemp, "IgnoreGuild", 0, INIFileName) > 0 ? true : false;
     bAudio = GetPrivateProfileInt(szTemp, "Audio", 0, INIFileName) > 0 ? true : false;
-    sprintf_s(szWavePath,"%s\\mq2posse.wav",gszINIPath);
+    sprintf_s(szWavePath,"%s\\mq2posse.wav", gPathResources);
     GetPrivateProfileString(szTemp,"Soundfile", szWavePath,PosseSound,2047,INIFileName);
     GetPrivateProfileString(szTemp,"SkipZones","poknowledge,guildhall,guildlobby,bazaar,neighborhood",szSkipZones,2047,INIFileName);
 
@@ -388,7 +381,6 @@ VOID LoadINI(VOID)
 VOID SaveINI(VOID) {
     char ToStr[16];
 
-    Update_INIFileName();
     // write on/off settings
 	char szTemp[MAX_STRING];
     sprintf_s(szTemp,"%s_Settings",GetCharInfo()->Name);
@@ -412,13 +404,13 @@ VOID SaveINI(VOID) {
     sprintf_s(szTemp,"%s_Names",GetCharInfo()->Name);
     WritePrivateProfileSection(szTemp, "", INIFileName);
     for (unsigned int a = 0; a < vIniNames.size(); a++) {
-        string& vRef = vIniNames[a];
+	    std::string& vRef = vIniNames[a];
         WritePrivateProfileString(szTemp,vRef.c_str(),"1",INIFileName);
     }
     sprintf_s(szTemp,"%s_Commands",GetCharInfo()->Name);
     WritePrivateProfileSection(szTemp, "", INIFileName);
     for (unsigned int a = 0; a < vCommands.size(); a++) {
-        string& vRef = vCommands[a];
+	    std::string& vRef = vCommands[a];
         sprintf_s(szCount,"%d",a);
         WritePrivateProfileString(szTemp,szCount,vRef.c_str(),INIFileName);
     }
@@ -463,8 +455,8 @@ void ShowHelp(void) {
 
 VOID doCommands(VOID) {
     PSPAWNINFO pChar = GetCharInfo()->pSpawn;
-    for (register unsigned int a = 0; a < vCommands.size(); a++) {
-        string& vRef = vCommands[a];
+    for (unsigned int a = 0; a < vCommands.size(); a++) {
+	    std::string& vRef = vCommands[a];
         DoCommand(pChar, (PCHAR)vRef.c_str());
     }
 }
@@ -527,7 +519,7 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
             return;
         }
         for (unsigned int a = 0; a < vNames.size(); a++) {
-            string& vRef = vNames[a];
+	        std::string& vRef = vNames[a];
             if (!_stricmp(szTemp,vRef.c_str())) {
                 WriteChatf("MQ2Posse :: User \ay%s\ax already exists", szTemp);
                 return;
@@ -544,7 +536,7 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
         int delIndex = -1;
         GetArg(szTemp,zLine,2);
         for (unsigned int a = 0; a < vIniNames.size(); a++) {
-            string& vRef = vIniNames[a];
+	        std::string& vRef = vIniNames[a];
             if (!_stricmp(szTemp,vRef.c_str())) {
                 delIndex = a;
             }
@@ -567,7 +559,7 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
             return;
         }
         for (unsigned int a = 0; a < vCommands.size(); a++) {
-            string& vRef = vCommands[a];
+	        std::string& vRef = vCommands[a];
             if (!_stricmp(szTemp,vRef.c_str())) {
                 WriteChatf("MQ2Posse :: Command \ay%s\ax already exists", szTemp);
                 return;
@@ -580,7 +572,7 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
         GetArg(szBuffer, zLine, 2);
         unsigned int a = atoi(szBuffer);
         if(a > 0 && a < vCommands.size()+1) {
-            string& vRef = vCommands[a-1];
+	        std::string& vRef = vCommands[a-1];
             WriteChatf("MQ2Posse: Command \ay%d\ax \at%s\ax deleted.", a, vRef.c_str());
             vCommands.erase(vCommands.begin() + (a-1));
         } else {
@@ -665,72 +657,34 @@ bool CheckGroup(PCHAR szName)
 {
 	if (PCHARINFO pChar = GetCharInfo())
 	{
-		if (pChar->pGroupInfo && pChar->pGroupInfo->pMember && pChar->pGroupInfo->pMember[0])
+		if (pChar->pGroupInfo)
 		{
 			for (int a = 1; a < 6; a++) // Lets loop through the group and see if we can find this person in our
 			{
-				if (pChar->pGroupInfo->pMember[a])
+				if (auto pMember = pChar->pGroupInfo->pMember[a])
 				{
-					if (pChar->pGroupInfo->pMember[a]->pName) // and we know their name
-					{
-						CHAR szGroupMemberName[MAX_STRING] = { 0 };
-						GetCXStr(pChar->pGroupInfo->pMember[a]->pName, szGroupMemberName, MAX_STRING);
-						if (!_stricmp(szGroupMemberName, szName)) // Ok so I am the ML
-						{
-							return true;
-						}
-					}
+					if (ci_equals(pMember->Name, szName))
+						return true;
 				}
 			}
 		}
 	}
 	return false;
-}
-
-PMQPLUGIN Plugin(char* PluginName)
-{
-	long Length = strlen(PluginName) + 1;
-	PMQPLUGIN pLook = pPlugins;
-	while (pLook && _strnicmp(PluginName, pLook->szFilename, Length)) pLook = pLook->pNext;
-	return pLook;
 }
 
 bool CheckEQBC(PCHAR szName)
 {
-	if (PMQPLUGIN pLook = Plugin("mq2eqbc"))
-	{
-		if (unsigned short(*fisConnected)() = (unsigned short(*)())GetProcAddress(pLook->hModule, "isConnected"))
-		{
-			if (fisConnected())
-			{
-				if (bool(*fAreTheyConnected)(char* szName) = (bool(*)(char* szName))GetProcAddress(pLook->hModule, "AreTheyConnected"))
-				{
-					if (fAreTheyConnected(szName))
-					{
-						return true;
-					}
-				}
-			}
-		}
-	}
-	return false;
+	auto fisConnected = (unsigned short(*)())(GetPluginProc("MQ2EQBC", "isConnected"));
+	auto fAreTheyConnected = (bool(*)(char*))(GetPluginProc("MQ2EQBC", "AreTheyConnected"));
+
+	return fisConnected && fAreTheyConnected && fisConnected() && fAreTheyConnected(szName);
 }
 
 bool CheckMQ2DanNet(PCHAR szName)
 {
-	if (PMQPLUGIN pLook = Plugin("mq2dannet"))
-	{
-		if (bool(*f_peer_connected)(const std::string& name) = (bool(*)(const std::string& name))GetProcAddress(pLook->hModule, "peer_connected"))
-		{
-			char szTemp[MAX_STRING];
-			sprintf_s(szTemp, "%s_%s", EQADDR_SERVERNAME, szName);
-			if (f_peer_connected(szTemp))
-			{
-				return true;
-			}
-		}
-	}
-	return false;
+	auto f_peer_connected = (bool(*)(const std::string & name))GetPluginProc("MQ2DanNet", "peer_connected");
+
+	return f_peer_connected && f_peer_connected(std::string(EQADDR_SERVERNAME) + "_" + szName);
 }
 
 void ClearFriendsAndStrangers(PCHAR szDeleteName)
@@ -739,7 +693,7 @@ void ClearFriendsAndStrangers(PCHAR szDeleteName)
 	{
 		for (unsigned int a = 0; a < vFriends.size(); a++)
 		{
-			string& Ref = vFriends[a];
+			std::string& Ref = vFriends[a];
 			if (!_stricmp(szDeleteName, Ref.c_str()))
 			{
 				vFriends.erase(vFriends.begin() + a);
@@ -754,7 +708,7 @@ void ClearFriendsAndStrangers(PCHAR szDeleteName)
 	{
 		for (unsigned int a = 0; a < vStrangers.size(); a++)
 		{
-			string& Ref = vStrangers[a];
+			std::string& Ref = vStrangers[a];
 			if (!_stricmp(szDeleteName, Ref.c_str()))
 			{
 				vStrangers.erase(vStrangers.begin() + a);
@@ -775,7 +729,7 @@ void ClearFriendsAndStrangers(PCHAR szDeleteName)
 	}
 }
 
-bool CheckNames(PCHAR szName) 
+bool CheckNames(PCHAR szName)
 {
 	CHAR szTemp[MAX_STRING];
 	if (gGameState == GAMESTATE_INGAME) {
@@ -783,10 +737,10 @@ bool CheckNames(PCHAR szName)
 			strcpy_s(szTemp, szName);
 			_strlwr_s(szTemp);
 			// Lets check if they are on our white listed names
-			for (register unsigned int a = 0; a < vNames.size(); a++)
+			for (unsigned int a = 0; a < vNames.size(); a++)
 			{
-				string& vRef = vNames[a];
-				if (!_stricmp(szTemp, vRef.c_str())) 
+				std::string& vRef = vNames[a];
+				if (!_stricmp(szTemp, vRef.c_str()))
 				{
 					return true;
 				}
@@ -825,11 +779,11 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 #if defined(NEWCHARINFO)
 					if (GetCharInfo()->GuildID.GUID)
 					{
-						if (GetCharInfo()->GuildID.GUID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID) 
+						if (GetCharInfo()->GuildID.GUID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
 #else
 					if (GetCharInfo()->GuildID)
 					{
-						if (GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID) 
+						if (GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
 #endif
 						{
 							vSeen.erase(vSeen.begin() + a);
@@ -842,7 +796,7 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 					if (GetCharInfo()->pSpawn->Fellowship.FellowshipID)
 					{
 						FELLOWSHIPINFO Fellowship = (FELLOWSHIPINFO)GetCharInfo()->pSpawn->Fellowship;
-						for (DWORD i = 0; i < Fellowship.Members; i++)
+						for (int i = 0; i < Fellowship.Members; i++)
 						{
 							if (!_stricmp(Fellowship.FellowshipMember[i].Name, szTemp))
 							{
@@ -922,7 +876,7 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 	}
 }
 
-void SpawnCheck(PSPAWNINFO pNewSpawn) 
+void SpawnCheck(PSPAWNINFO pNewSpawn)
 {
 	if (!bPosseEnabled)
 	{
@@ -932,18 +886,18 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 	{
 		return;
 	}
-    if (pNewSpawn->GM == 1) 
+    if (pNewSpawn->GM == 1)
 	{
         WriteChatf("%s (\arGM\ax) is nearby.", pNewSpawn->DisplayedName);
         doCommands();
         return;
     }
-    if (GetSpawnType(pNewSpawn) == PC) 
+    if (GetSpawnType(pNewSpawn) == PC)
 	{
         PSPAWNINFO pChar = GetCharInfo()->pSpawn;
 		if (bIgnoreGuild)
 		{
-			if (bDebug) 
+			if (bDebug)
 			{
 				WriteChatf("My Name: %s Their Name: %s ", GetCharInfo()->Name, pNewSpawn->Name);
 				WriteChatf("My Guild ID: %lu Their Guild ID: %lu  ", GetCharInfo()->GuildID, pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID);
@@ -967,7 +921,7 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 			if (GetCharInfo()->pSpawn->Fellowship.FellowshipID)
 			{
 				FELLOWSHIPINFO Fellowship = (FELLOWSHIPINFO)pChar->Fellowship;
-				for (DWORD i = 0; i < Fellowship.Members; i++)
+				for (int i = 0; i < Fellowship.Members; i++)
 				{
 					if (!_stricmp(Fellowship.FellowshipMember[i].Name, pNewSpawn->Name))
 					{
@@ -978,9 +932,9 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 		}
         if (pNewSpawn != pChar && DistanceToSpawn(pNewSpawn, pChar) < SpawnRadius)
 		{
-            for (register unsigned int a = 0; a < vSeen.size(); a++) // check if spawn is on the list already
+            for (unsigned int a = 0; a < vSeen.size(); a++) // check if spawn is on the list already
 			{
-                string& vRef = vSeen[a];
+				std::string& vRef = vSeen[a];
                 if (!_stricmp(pNewSpawn->DisplayedName,vRef.c_str())) // Yup they are already in vSeen
 				{
 					return;
@@ -994,7 +948,7 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 				{
 					WriteChatf("\ag%s is nearby.\ax", pNewSpawn->DisplayedName);
 				}
-            } 
+            }
 			else // They are a stranger
 			{
                 vStrangers.push_back(pNewSpawn->DisplayedName); // Lets add them to our stranger list
@@ -1002,7 +956,7 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 				{
 					WriteChatf("\ar%s is nearby.\ax", pNewSpawn->DisplayedName);
 				}
-                if (bAudio) 
+                if (bAudio)
 				{
 					if (gAudioTimer <= MQGetTickCount64())
 					{
@@ -1045,14 +999,14 @@ PLUGIN_API VOID SetGameState(DWORD GameState) {
     }
 }
 
-PLUGIN_API VOID OnRemoveSpawn(PSPAWNINFO pSpawn) 
+PLUGIN_API VOID OnRemoveSpawn(PSPAWNINFO pSpawn)
 {
-    if (vSeen.size()) 
+    if (vSeen.size())
 	{
-        for (unsigned int a = 0; a < vSeen.size(); a++) 
+        for (unsigned int a = 0; a < vSeen.size(); a++)
 		{
-            string& vRef = vSeen[a];
-            if (!_stricmp(pSpawn->DisplayedName,vRef.c_str())) 
+			std::string& vRef = vSeen[a];
+            if (!_stricmp(pSpawn->DisplayedName,vRef.c_str()))
 			{
 				char delName[MAX_STRING];
                 sprintf_s(delName,"%s",vRef.c_str());
@@ -1063,7 +1017,7 @@ PLUGIN_API VOID OnRemoveSpawn(PSPAWNINFO pSpawn)
     }
 }
 
-PLUGIN_API VOID OnPulse(VOID) 
+PLUGIN_API VOID OnPulse(VOID)
 {
 	if (GetGameState() != GAMESTATE_INGAME || !bPosseEnabled)
 	{
@@ -1090,9 +1044,9 @@ PLUGIN_API VOID OnPulse(VOID)
 			CheckvSeen(); // Lets see if anyone has moved from stranger to friend or friend to stranger
 		}
 		unsigned int sCount = CountMatchingSpawns(&mySpawn, pCharInfo->pSpawn, false);
-		if (sCount) 
+		if (sCount)
 		{
-			for (unsigned int a = 1; a <= sCount; a++) 
+			for (unsigned int a = 1; a <= sCount; a++)
 			{
 				pNewSpawn = NthNearestSpawn(&mySpawn, a, pCharInfo->pSpawn, false);
 				SpawnCheck(pNewSpawn);
@@ -1102,12 +1056,12 @@ PLUGIN_API VOID OnPulse(VOID)
 				return;
 			}
 			bool bDidSee;
-			for (unsigned int a = 0; a < vSeen.size(); a++) 
+			for (unsigned int a = 0; a < vSeen.size(); a++)
 			{
-				string& vRef = vSeen[a];
+				std::string& vRef = vSeen[a];
 				sprintf_s(szTemp, "%s", vRef.c_str());
 				bDidSee = false;
-				for (unsigned int b = 1; b <= sCount; b++) 
+				for (unsigned int b = 1; b <= sCount; b++)
 				{
 					pNewSpawn = NthNearestSpawn(&mySpawn, b, pCharInfo->pSpawn, false);
 					if (!_stricmp(pNewSpawn->DisplayedName, szTemp))
@@ -1118,9 +1072,9 @@ PLUGIN_API VOID OnPulse(VOID)
 				}
 				if (!bDidSee) // Ok so they must have moved out of range
 				{
-					for (unsigned int b = 0; b < vSeen.size(); b++) 
+					for (unsigned int b = 0; b < vSeen.size(); b++)
 					{
-						string& vRef = vSeen[b];
+						std::string& vRef = vSeen[b];
 						if (!_stricmp(vRef.c_str(), szTemp))
 						{
 							vSeen.erase(vSeen.begin() + b); // Lets remove them from vSeen
@@ -1133,17 +1087,17 @@ PLUGIN_API VOID OnPulse(VOID)
 		}
 		else
 		{ // Ok there is no one in range lets clear vSeen/vFriends/vStrangers
-			if (vSeen.size()) 
+			if (vSeen.size())
 			{
-				for (unsigned int a = 0; a < vSeen.size(); a++) 
+				for (unsigned int a = 0; a < vSeen.size(); a++)
 				{
-					string& vRef = vSeen[a];
+					std::string& vRef = vSeen[a];
 					sprintf_s(szTemp, "%s", vRef.c_str());
 					vSeen.erase(vSeen.begin() + a);
 					ClearFriendsAndStrangers(szTemp);
 				}
 			}
-			else 
+			else
 			{ // This shouldn't happen but if it does we need to clear vFriends/vStrangers
 				vFriends.clear();
 				vStrangers.clear();
