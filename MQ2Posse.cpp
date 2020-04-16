@@ -839,10 +839,14 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 				}
 				if (bIgnoreFellowship)
 				{
+					#if defined(ROF2EMU) || defined(UFEMU)
 					if (GetCharInfo()->pSpawn->Fellowship.FellowshipID)
+					#else
+					if (GetCharInfo()->pSpawn->Fellowship.FellowshipGUID.GUID)
+					#endif
 					{
 						FELLOWSHIPINFO Fellowship = (FELLOWSHIPINFO)GetCharInfo()->pSpawn->Fellowship;
-						for (DWORD i = 0; i < Fellowship.Members; i++)
+						for (int i = 0; i < Fellowship.Members; i++)
 						{
 							if (!_stricmp(Fellowship.FellowshipMember[i].Name, szTemp))
 							{
@@ -964,10 +968,14 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 		}
 		if (bIgnoreFellowship)
 		{
+			#if defined(ROF2EMU) || defined(UFEMU)
 			if (GetCharInfo()->pSpawn->Fellowship.FellowshipID)
+			#else
+			if (GetCharInfo()->pSpawn->Fellowship.FellowshipGUID.GUID)
+			#endif
 			{
 				FELLOWSHIPINFO Fellowship = (FELLOWSHIPINFO)pChar->Fellowship;
-				for (DWORD i = 0; i < Fellowship.Members; i++)
+				for (int i = 0; i < Fellowship.Members; i++)
 				{
 					if (!_stricmp(Fellowship.FellowshipMember[i].Name, pNewSpawn->Name))
 					{
