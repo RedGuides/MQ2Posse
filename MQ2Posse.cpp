@@ -793,7 +793,7 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 				}
 				if (bIgnoreFellowship)
 				{
-					if (GetCharInfo()->pSpawn->Fellowship.FellowshipID)
+					if (GetCharInfo()->pSpawn->Fellowship.FellowshipGUID.GUID)
 					{
 						FELLOWSHIPINFO Fellowship = (FELLOWSHIPINFO)GetCharInfo()->pSpawn->Fellowship;
 						for (int i = 0; i < Fellowship.Members; i++)
@@ -918,7 +918,7 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 		}
 		if (bIgnoreFellowship)
 		{
-			if (GetCharInfo()->pSpawn->Fellowship.FellowshipID)
+			if (GetCharInfo()->pSpawn->Fellowship.FellowshipGUID.GUID)
 			{
 				FELLOWSHIPINFO Fellowship = (FELLOWSHIPINFO)pChar->Fellowship;
 				for (int i = 0; i < Fellowship.Members; i++)
