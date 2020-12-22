@@ -404,13 +404,13 @@ VOID SaveINI(VOID) {
     sprintf_s(szTemp,"%s_Names",GetCharInfo()->Name);
     WritePrivateProfileSection(szTemp, "", INIFileName);
     for (unsigned int a = 0; a < vIniNames.size(); a++) {
-	    std::string& vRef = vIniNames[a];
+        std::string& vRef = vIniNames[a];
         WritePrivateProfileString(szTemp,vRef.c_str(),"1",INIFileName);
     }
     sprintf_s(szTemp,"%s_Commands",GetCharInfo()->Name);
     WritePrivateProfileSection(szTemp, "", INIFileName);
     for (unsigned int a = 0; a < vCommands.size(); a++) {
-	    std::string& vRef = vCommands[a];
+        std::string& vRef = vCommands[a];
         sprintf_s(szCount,"%d",a);
         WritePrivateProfileString(szTemp,szCount,vRef.c_str(),INIFileName);
     }
@@ -456,7 +456,7 @@ void ShowHelp(void) {
 VOID doCommands(VOID) {
     PSPAWNINFO pChar = GetCharInfo()->pSpawn;
     for (unsigned int a = 0; a < vCommands.size(); a++) {
-	    std::string& vRef = vCommands[a];
+        std::string& vRef = vCommands[a];
         DoCommand(pChar, (PCHAR)vRef.c_str());
     }
 }
@@ -519,7 +519,7 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
             return;
         }
         for (unsigned int a = 0; a < vNames.size(); a++) {
-	        std::string& vRef = vNames[a];
+            std::string& vRef = vNames[a];
             if (!_stricmp(szTemp,vRef.c_str())) {
                 WriteChatf("MQ2Posse :: User \ay%s\ax already exists", szTemp);
                 return;
@@ -536,7 +536,7 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
         int delIndex = -1;
         GetArg(szTemp,zLine,2);
         for (unsigned int a = 0; a < vIniNames.size(); a++) {
-	        std::string& vRef = vIniNames[a];
+            std::string& vRef = vIniNames[a];
             if (!_stricmp(szTemp,vRef.c_str())) {
                 delIndex = a;
             }
@@ -559,7 +559,7 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
             return;
         }
         for (unsigned int a = 0; a < vCommands.size(); a++) {
-	        std::string& vRef = vCommands[a];
+            std::string& vRef = vCommands[a];
             if (!_stricmp(szTemp,vRef.c_str())) {
                 WriteChatf("MQ2Posse :: Command \ay%s\ax already exists", szTemp);
                 return;
@@ -572,7 +572,7 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
         GetArg(szBuffer, zLine, 2);
         unsigned int a = atoi(szBuffer);
         if(a > 0 && a < vCommands.size()+1) {
-	        std::string& vRef = vCommands[a-1];
+            std::string& vRef = vCommands[a-1];
             WriteChatf("MQ2Posse: Command \ay%d\ax \at%s\ax deleted.", a, vRef.c_str());
             vCommands.erase(vCommands.begin() + (a-1));
         } else {
@@ -965,7 +965,7 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 					}
                 }
                 doCommands();
-             }
+            }
         }
     }
     return;
@@ -985,10 +985,10 @@ PLUGIN_API VOID InitializePlugin(VOID) {
 }
 
 PLUGIN_API VOID ShutdownPlugin(VOID) {
-   DebugSpewAlways("Shutting down MQ2Posse");
-   RemoveMQ2Data("Posse");
-   delete pPosseType;
-   RemoveCommand("/posse");
+    DebugSpewAlways("Shutting down MQ2Posse");
+    RemoveMQ2Data("Posse");
+    delete pPosseType;
+    RemoveCommand("/posse");
 }
 
 PLUGIN_API VOID SetGameState(DWORD GameState) {
