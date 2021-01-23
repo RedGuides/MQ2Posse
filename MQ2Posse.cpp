@@ -260,7 +260,7 @@ VOID LoadINI(VOID)
 	bIgnoreFellowship = GetPrivateProfileInt(szTemp, "IgnoreFellowship", 0, INIFileName) > 0 ? true : false;
     bIgnoreGuild = GetPrivateProfileInt(szTemp, "IgnoreGuild", 0, INIFileName) > 0 ? true : false;
     bAudio = GetPrivateProfileInt(szTemp, "Audio", 0, INIFileName) > 0 ? true : false;
-    sprintf_s(szWavePath,"%s\\mq2posse.wav", gPathResources);
+    sprintf_s(szWavePath,"%s\\sounds\\mq2posse.wav", gPathResources);
     GetPrivateProfileString(szTemp,"Soundfile", szWavePath,PosseSound,2047,INIFileName);
     GetPrivateProfileString(szTemp,"SkipZones","poknowledge,guildhall,guildlobby,bazaar,neighborhood",szSkipZones,2047,INIFileName);
 
