@@ -8,9 +8,9 @@
 // v1.06 :: Plure - 2017-05-04
 // v1.07 :: Sym - 2017-07-29 - Added Posse.StrangerNames TLO. Space separated list of current strangers.
 // v1.08 :: EqMule - 2018-10-18 - Fixed support for taking guild members into account
-// v1.09 :: Plure - 2019-07-04 - White listed people in your group and those connected to mq2dannet, added Posse.FriendNames TLO, 
-//			made it so if someone went from being a stranger to friend or friend to stranger it would recognized this, 
-//			added the ability to ignore people in your fellowship, fixed a bug where if you set it to ignore your guild and at some point you became guildless it would ignore everyone not in a guild.
+// v1.09 :: Plure - 2019-07-04 - White listed people in your group and those connected to mq2dannet, added Posse.FriendNames TLO,
+//          made it so if someone went from being a stranger to friend or friend to stranger it would recognized this,
+//          added the ability to ignore people in your fellowship, fixed a bug where if you set it to ignore your guild and at some point you became guildless it would ignore everyone not in a guild.
 
 #include <mq/Plugin.h>
 #include "mmsystem.h"
@@ -197,7 +197,7 @@ void ListUsers()
 void ListCommands()
 {
     WriteChatf("Command list contains \ay%d\ax %s", vCommands.size(), vCommands.size() > 1 ? "entries" : "entry");
-    for (unsigned int a = 0; a < vCommands.size(); a++) 
+    for (unsigned int a = 0; a < vCommands.size(); a++)
 	{
 		std::string& vRef = vCommands[a];
         WriteChatf("\at%d: %s\ax", a+1, vRef.c_str());
@@ -659,9 +659,9 @@ bool CheckGroup(PCHAR szName)
 	{
 		if (pChar->pGroupInfo)
 		{
-			for (int a = 1; a < 6; a++) // Lets loop through the group and see if we can find this person in our
+			for (int a = 1; a < MAX_GROUP_SIZE; a++)
 			{
-				if (auto pMember = pChar->pGroupInfo->pMember[a])
+				if (const auto pMember = GetGroupMember(a))
 				{
 					if (ci_equals(pMember->Name, szName))
 						return true;
@@ -716,7 +716,7 @@ void ClearFriendsAndStrangers(PCHAR szDeleteName)
 				{
 					WriteChatf("\ar%s has moved out of range.\ax", szDeleteName);
 				}
-				if (bAudio) 
+				if (bAudio)
 				{
 					if (gAudioTimer <= MQGetTickCount64())
 					{
