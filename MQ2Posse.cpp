@@ -78,10 +78,6 @@ public:
 		TypeMember(StrangerNames);
 	}
 
-	~MQ2PosseType()
-	{
-	}
-
 	virtual bool GetMember(MQVarPtr VarPtr, const char* Member, char* Index, MQTypeVar& Dest) override
 	{
 		MQTypeMember* pMember = MQ2PosseType::FindMember(Member);
@@ -159,21 +155,12 @@ public:
 		return false;
 	}
 
-	bool ToString(MQVarPtr VarPtr, PCHAR Destination)
+	bool ToString(MQVarPtr VarPtr, PCHAR Destination) override
 	{
 		strcpy_s(Destination, MAX_STRING, "FALSE");
 		if (bPosseEnabled)
 			strcpy_s(Destination, MAX_STRING, "TRUE");
 		return true;
-	}
-
-	bool FromData(MQVarPtr& VarPtr, MQTypeVar& Source)
-	{
-		return false;
-	}
-	virtual bool FromString(MQVarPtr& VarPtr, const char* Source) override
-	{
-		return false;
 	}
 };
 
@@ -653,23 +640,10 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
     }
 }
 
-bool CheckGroup(PCHAR szName)
+bool CheckGroup(const char* szName)
 {
-	if (PCHARINFO pChar = GetCharInfo())
-	{
-		if (pChar->pGroupInfo)
-		{
-			for (int a = 1; a < MAX_GROUP_SIZE; a++)
-			{
-				if (const auto pMember = GetGroupMember(a))
-				{
-					if (ci_equals(pMember->Name, szName))
-						return true;
-				}
-			}
-		}
-	}
-	return false;
+	return pCharData && pCharData->pGroupInfo
+		&& pCharData->Group->GetGroupMember(szName) != nullptr;
 }
 
 bool CheckEQBC(PCHAR szName)
@@ -776,26 +750,18 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 			{
 				if (bIgnoreGuild)
 				{
-#if defined(NEWCHARINFO)
-					if (GetCharInfo()->GuildID.GUID)
+					if (pCharData->GuildID
+						&& pCharData->GuildID == pNewSpawn->GuildID)
 					{
-						if (GetCharInfo()->GuildID.GUID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
-#else
-					if (GetCharInfo()->GuildID)
-					{
-						if (GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
-#endif
-						{
-							vSeen.erase(vSeen.begin() + a);
-							ClearFriendsAndStrangers(szTemp);
-						}
+						vSeen.erase(vSeen.begin() + a);
+						ClearFriendsAndStrangers(szTemp);
 					}
 				}
 				if (bIgnoreFellowship)
 				{
 					if (GetCharInfo()->pSpawn->Fellowship.FellowshipGUID.GUID)
 					{
-						FELLOWSHIPINFO Fellowship = (FELLOWSHIPINFO)GetCharInfo()->pSpawn->Fellowship;
+						SFellowship& Fellowship = GetCharInfo()->pSpawn->Fellowship;
 						for (int i = 0; i < Fellowship.Members; i++)
 						{
 							if (!_stricmp(Fellowship.FellowshipMember[i].Name, szTemp))
@@ -894,36 +860,28 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
     }
     if (GetSpawnType(pNewSpawn) == PC)
 	{
-        PSPAWNINFO pChar = GetCharInfo()->pSpawn;
+		PSPAWNINFO pChar = GetCharInfo()->pSpawn;
 		if (bIgnoreGuild)
 		{
 			if (bDebug)
 			{
 				WriteChatf("My Name: %s Their Name: %s ", GetCharInfo()->Name, pNewSpawn->Name);
-				WriteChatf("My Guild ID: %lu Their Guild ID: %lu  ", GetCharInfo()->GuildID, pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID);
+				WriteChatf("My Guild ID: %lu Their Guild ID: %lu  ", GetCharInfo()->GuildID, pNewSpawn->GuildID);
 			}
-#if defined(NEWCHARINFO)
-			if (GetCharInfo()->GuildID.GUID)
+
+			if (pCharData->GuildID
+				&& pCharData->GuildID == pNewSpawn->GuildID)
 			{
-				if (GetCharInfo()->GuildID.GUID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
-#else
-			if (GetCharInfo()->GuildID)
-			{
-				if (GetCharInfo()->GuildID == pNewSpawn->mPlayerPhysicsClient.pSpawn->GuildID)
-#endif
-				{
-					return;
-				}
+				return;
 			}
 		}
 		if (bIgnoreFellowship)
 		{
 			if (GetCharInfo()->pSpawn->Fellowship.FellowshipGUID.GUID)
 			{
-				FELLOWSHIPINFO Fellowship = (FELLOWSHIPINFO)pChar->Fellowship;
-				for (int i = 0; i < Fellowship.Members; i++)
+				for (int i = 0; i < pChar->Fellowship.Members; i++)
 				{
-					if (!_stricmp(Fellowship.FellowshipMember[i].Name, pNewSpawn->Name))
+					if (!_stricmp(pChar->Fellowship.FellowshipMember[i].Name, pNewSpawn->Name))
 					{
 						return;
 					}
