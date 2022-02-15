@@ -90,7 +90,7 @@ public:
 			Dest.Type = mq::datatypes::pBoolType;
 			return true;
 		case Count:
-			Dest.Int = vSeen.size();
+			Dest.Int = (int)vSeen.size();
 			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case Radius:
@@ -102,7 +102,7 @@ public:
 			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case Friends:
-			Dest.Int = vFriends.size();
+			Dest.Int = (int)vFriends.size();
 			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case FriendNames:
@@ -127,7 +127,7 @@ public:
 			}
 			return true;
 		case Strangers:
-			Dest.Int = vStrangers.size();
+			Dest.Int = (int)vStrangers.size();
 			Dest.Type = mq::datatypes::pIntType;
 			return true;
 		case StrangerNames:
