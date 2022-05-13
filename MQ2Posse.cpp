@@ -658,7 +658,7 @@ bool CheckMQ2DanNet(PCHAR szName)
 {
 	auto f_peer_connected = (bool(*)(const std::string & name))GetPluginProc("MQ2DanNet", "peer_connected");
 
-	return f_peer_connected && f_peer_connected(std::string(EQADDR_SERVERNAME) + "_" + szName);
+	return f_peer_connected && f_peer_connected(std::string(GetServerShortName()) + "_" + szName);
 }
 
 void ClearFriendsAndStrangers(PCHAR szDeleteName)
