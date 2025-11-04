@@ -642,8 +642,8 @@ VOID PosseCommand(PSPAWNINFO pChar, PCHAR zLine) {
 
 bool CheckGroup(const char* szName)
 {
-	return pCharData && pCharData->pGroupInfo
-		&& pCharData->Group->GetGroupMember(szName) != nullptr;
+	return pLocalPC && pLocalPC->Group
+		&& pLocalPC->Group->GetGroupMember(szName) != nullptr;
 }
 
 bool CheckEQBC(PCHAR szName)
@@ -707,7 +707,7 @@ bool CheckNames(PCHAR szName)
 {
 	CHAR szTemp[MAX_STRING];
 	if (gGameState == GAMESTATE_INGAME) {
-		if (pCharData) {
+		if (pLocalPC) {
 			strcpy_s(szTemp, szName);
 			_strlwr_s(szTemp);
 			// Lets check if they are on our white listed names
@@ -750,8 +750,8 @@ void CheckvSeen(void) // We need to check if any of the vSeen characters have ch
 			{
 				if (bIgnoreGuild)
 				{
-					if (pCharData->GuildID
-						&& pCharData->GuildID == pNewSpawn->GuildID)
+					if (pLocalPC->GuildID
+						&& pLocalPC->GuildID == pNewSpawn->GuildID)
 					{
 						vSeen.erase(vSeen.begin() + a);
 						ClearFriendsAndStrangers(szTemp);
@@ -869,8 +869,8 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 				WriteChatf("My Guild ID: %lu Their Guild ID: %lu  ", GetCharInfo()->GuildID, pNewSpawn->GuildID);
 			}
 
-			if (pCharData->GuildID
-				&& pCharData->GuildID == pNewSpawn->GuildID)
+			if (pLocalPC->GuildID
+				&& pLocalPC->GuildID == pNewSpawn->GuildID)
 			{
 				return;
 			}
