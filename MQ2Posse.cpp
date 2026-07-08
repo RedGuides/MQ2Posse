@@ -888,7 +888,7 @@ void SpawnCheck(PSPAWNINFO pNewSpawn)
 				}
 			}
 		}
-        if (pNewSpawn != pChar && DistanceToSpawn(pNewSpawn, pChar) < SpawnRadius)
+        if (pNewSpawn != pChar && GetDistance2D(pNewSpawn, pChar) < SpawnRadius)
 		{
             for (unsigned int a = 0; a < vSeen.size(); a++) // check if spawn is on the list already
 			{
