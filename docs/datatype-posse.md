@@ -10,37 +10,37 @@ Returns status about players within a radius, if they're friends or strangers, a
 
 ## Members
 <!--dt-members-start-->
-### {{ renderMember(type='bool', name='Status') }}
+/// member | bool Status
+Shows if plugin is looking for players or not
+///
 
-:   Shows if plugin is looking for players or not
+/// member | int Count
+The numbers of players within the radius
+///
 
-### {{ renderMember(type='int', name='Count') }}
+/// member | int Radius
+Size of check radius
+///
 
-:   The numbers of players within the radius
+/// member | int ZRadius
+Size of check radius on the z axis
+///
 
-### {{ renderMember(type='int', name='Radius') }}
+/// member | int Friends
+Number of friends within radius
+///
 
-:   Size of check radius
+/// member | string FriendNames
+Returns all friend names
+///
 
-### {{ renderMember(type='int', name='ZRadius') }}
+/// member | int Strangers
+Number of strangers within radius
+///
 
-:   Size of check radius on the z axis
-
-### {{ renderMember(type='int', name='Friends') }}
-
-:   Number of friends within radius
-
-### {{ renderMember(type='string', name='FriendNames') }}
-
-:   Returns all friend names
-
-### {{ renderMember(type='int', name='Strangers') }}
-
-:   Number of strangers within radius
-
-### {{ renderMember(type='string', name='StrangerNames') }}
-
-:   Returns all stranger names
+/// member | string StrangerNames
+Returns all stranger names
+///
 
 <!--dt-members-end-->
 

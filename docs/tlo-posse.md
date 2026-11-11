@@ -10,9 +10,9 @@ Holds a form that shows if the plugin is enabled, as well as a far more interest
 
 ## Forms
 <!--tlo-forms-start-->
-### {{ renderMember(type='Posse', name='Posse') }}
-
-:   Returns TRUE if plugin is checking for new players, FALSE if it's not. Same as `${Posse.Status}`
+/// member | Posse Posse
+Returns TRUE if plugin is checking for new players, FALSE if it's not. Same as `${Posse.Status}`
+///
 
 <!--tlo-forms-end-->
 
